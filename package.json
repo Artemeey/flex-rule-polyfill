@@ -1,0 +1,17 @@
+{
+  "name": "flex-rule-polyfill",
+  "author": {
+    "name": "Artemeey",
+    "url": "https://github.com/Artemeey/"
+  },
+  "private": true,
+  "type": "module",
+  "scripts": {
+		"build": "tsc --project tsconfig.json && esbuild src/flex-rule-polyfill.ts --bundle --minify --format=iife --global-name=FlexRulePolyfill --outfile=dist/flex-rule-polyfill.browser.js",
+    "check": "tsc --project tsconfig.json --noEmit"
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.11",
+    "typescript": "^5.9.3"
+  }
+}
