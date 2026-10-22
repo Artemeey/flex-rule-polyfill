@@ -10,7 +10,7 @@ English version: [README.md](./README.md)
 
 ## Demo
 
-- [Открыть demo на русском языке](https://artemeey.github.io/flex-rule-polyfill/#language=ru)
+- [Открыть demo на GitHub Pages](https://artemeey.github.io/flex-rule-polyfill/#language=ru)
 - [Открыть demo локально](./demo/)
 
 Demo проверяет поддержку нативного CSS `rule`. Если браузер поддерживает это свойство, Canvas-полифил не используется и
