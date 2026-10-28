@@ -177,15 +177,8 @@ const paint = (
     const insetParts = insetValue.match(/^(-?\d*\.?\d+)(?:px)?(?:\s+(-?\d*\.?\d+)(?:px)?)?$/);
     const insetStart = insetParts ? Number(insetParts[1]) : 0;
     const insetEnd = insetParts ? Number(insetParts[2] ?? insetParts[1]) : 0;
-    // Сохранять прежнюю отрисовку обоих направлений, пока не задано отдельное правило.
-    const columnOverride = style.getPropertyValue('--flex-column-rule-style').trim();
-    const rowOverride = style.getPropertyValue('--flex-row-rule-style').trim();
-    const columnStyle = columnOverride || style.columnRuleStyle;
-    const rowStyle = rowOverride || style.getPropertyValue('row-rule-style').trim();
-    const axisStylesSpecified = Boolean(columnOverride || rowOverride
-        || (columnStyle && columnStyle !== 'none') || (rowStyle && rowStyle !== 'none'));
-    const drawColumns = !axisStylesSpecified || Boolean(columnStyle && columnStyle !== 'none' && columnStyle !== 'hidden');
-    const drawRows = !axisStylesSpecified || Boolean(rowStyle && rowStyle !== 'none' && rowStyle !== 'hidden');
+    // Явное отключение нельзя отличить от значения column-rule по умолчанию без маркера.
+    const hideColumnRules = style.getPropertyValue('--flex-column-rule-style').trim() === 'none';
 
     context.strokeStyle = options.color
         ?? rule.color
@@ -211,11 +204,10 @@ const paint = (
             if (start >= end) continue;
 
             if (horizontal) {
-                if (!drawColumns) continue;
+                if (hideColumnRules) continue;
                 context.moveTo(position, start);
                 context.lineTo(position, end);
             } else {
-                if (!drawRows) continue;
                 context.moveTo(start, position);
                 context.lineTo(end, position);
             }
@@ -235,11 +227,10 @@ const paint = (
         if (start >= end) continue;
 
         if (horizontal) {
-            if (!drawRows) continue;
             context.moveTo(start, middle);
             context.lineTo(end, middle);
         } else {
-            if (!drawColumns) continue;
+            if (hideColumnRules) continue;
             context.moveTo(middle, start);
             context.lineTo(middle, end);
         }

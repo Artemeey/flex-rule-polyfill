@@ -91,9 +91,9 @@ The priority for `color` and `width` is: API options, values read from the compu
 properties, and defaults.
 
 `rule-inset` shortens both ends of each line. The polyfill reads one or two pixel values from the computed property;
-use `--flex-rule-inset` with the same values when the browser does not support it. For responsive direction changes,
-set `--flex-column-rule-style` and `--flex-row-rule-style` to `solid` or `none` if the corresponding CSS rules are
-not available as computed styles. For example, a mobile layout can use `column-rule: none; --flex-row-rule-style: solid`.
+use `--flex-rule-inset` with the same values when the browser does not support it. To hide vertical lines on mobile while
+keeping horizontal ones, set `column-rule: none` and `--flex-column-rule-style: none` in the same media query. The custom
+property tells the polyfill that `none` was set explicitly rather than being the default value.
 
 The polyfill supports `flex-wrap`, different item sizes, `order`, row and column directions, reverse directions, RTL,
 scrolling, and dynamic changes observed by the browser. It measures only direct HTML element children of the Flexbox
@@ -113,7 +113,7 @@ This project provides a visual fallback, not a complete CSS Gaps implementation.
 | `rule-style` | Fixed | Only `solid` is supported. |
 | `rule-color` | Visual equivalent | Use `options.color` or `--flex-rule-color`; the standard longhand is not parsed. |
 | `rule-width` | Visual equivalent | Use `options.width` or `--flex-rule-width`; the standard longhand is not parsed. |
-| `row-rule` / `column-rule` | Partial | Computed styles or `--flex-row-rule-style` / `--flex-column-rule-style` control which direction is drawn. Both directions share a color and width. |
+| `row-rule` / `column-rule` | Partial | Both directions share a color and width; `--flex-column-rule-style: none` hides vertical lines. |
 | `rule-break` and related properties | Not implemented | Intersection breaks are not supported. |
 | `rule-inset` | Partial | One or two pixel values inset line ends; use `--flex-rule-inset` when CSS support is absent. |
 | Other inset properties | Not implemented | Cap/junction variants and percentages are not supported. |
