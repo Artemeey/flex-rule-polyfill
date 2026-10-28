@@ -178,7 +178,7 @@ const paint = (
     const insetStart = insetParts ? Number(insetParts[1]) : 0;
     const insetEnd = insetParts ? Number(insetParts[2] ?? insetParts[1]) : 0;
     // Явное отключение нельзя отличить от значения column-rule по умолчанию без маркера.
-    const hideColumnRules = style.getPropertyValue('--flex-column-rule-style').trim() === 'none';
+    const hideColumnRules = style.getPropertyValue('--flex-column-rule').trim() === 'none';
 
     context.strokeStyle = options.color
         ?? rule.color

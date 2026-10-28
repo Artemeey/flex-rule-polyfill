@@ -92,7 +92,7 @@ properties, and defaults.
 
 `rule-inset` shortens both ends of each line. The polyfill reads one or two pixel values from the computed property;
 use `--flex-rule-inset` with the same values when the browser does not support it. To hide vertical lines on mobile while
-keeping horizontal ones, set `column-rule: none` and `--flex-column-rule-style: none` in the same media query. The custom
+keeping horizontal ones, set `column-rule: none` and `--flex-column-rule: none` in the same media query. The custom
 property tells the polyfill that `none` was set explicitly rather than being the default value.
 
 The polyfill supports `flex-wrap`, different item sizes, `order`, row and column directions, reverse directions, RTL,
@@ -113,7 +113,7 @@ This project provides a visual fallback, not a complete CSS Gaps implementation.
 | `rule-style` | Fixed | Only `solid` is supported. |
 | `rule-color` | Visual equivalent | Use `options.color` or `--flex-rule-color`; the standard longhand is not parsed. |
 | `rule-width` | Visual equivalent | Use `options.width` or `--flex-rule-width`; the standard longhand is not parsed. |
-| `row-rule` / `column-rule` | Partial | Both directions share a color and width; `--flex-column-rule-style: none` hides vertical lines. |
+| `row-rule` / `column-rule` | Partial | Both directions share a color and width; `--flex-column-rule: none` hides vertical lines. |
 | `rule-break` and related properties | Not implemented | Intersection breaks are not supported. |
 | `rule-inset` | Partial | One or two pixel values inset line ends; use `--flex-rule-inset` when CSS support is absent. |
 | Other inset properties | Not implemented | Cap/junction variants and percentages are not supported. |
