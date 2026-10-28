@@ -13,6 +13,6 @@ export interface FlexRuleOptions {
  * Draw solid `rule` gap decorations on a flex container in browsers without native support.
  * The returned cleanup function disconnects observers and removes the canvas.
  * Supports flex-wrap, row/column directions, reverse directions, and changing item sizes.
- * Does not implement every CSS Gaps feature (lists, dashed, insets, writing modes).
+ * Does not implement every CSS Gaps feature (lists, dashed, writing modes).
  */
 export declare const polyfillFlexRule: (flex: HTMLElement, options?: FlexRuleOptions) => (() => void);

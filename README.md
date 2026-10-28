@@ -90,6 +90,11 @@ destroy();
 The priority for `color` and `width` is: API options, values read from the computed `rule` shorthand, Canvas custom
 properties, and defaults.
 
+`rule-inset` shortens both ends of each line. The polyfill reads one or two pixel values from the computed property;
+use `--flex-rule-inset` with the same values when the browser does not support it. For responsive direction changes,
+set `--flex-column-rule-style` and `--flex-row-rule-style` to `solid` or `none` if the corresponding CSS rules are
+not available as computed styles. For example, a mobile layout can use `column-rule: none; --flex-row-rule-style: solid`.
+
 The polyfill supports `flex-wrap`, different item sizes, `order`, row and column directions, reverse directions, RTL,
 scrolling, and dynamic changes observed by the browser. It measures only direct HTML element children of the Flexbox
 container.
@@ -108,9 +113,10 @@ This project provides a visual fallback, not a complete CSS Gaps implementation.
 | `rule-style` | Fixed | Only `solid` is supported. |
 | `rule-color` | Visual equivalent | Use `options.color` or `--flex-rule-color`; the standard longhand is not parsed. |
 | `rule-width` | Visual equivalent | Use `options.width` or `--flex-rule-width`; the standard longhand is not parsed. |
-| `row-rule` / `column-rule` | Partial | Lines are drawn according to the Flexbox direction, with one shared style. |
+| `row-rule` / `column-rule` | Partial | Computed styles or `--flex-row-rule-style` / `--flex-column-rule-style` control which direction is drawn. Both directions share a color and width. |
 | `rule-break` and related properties | Not implemented | Intersection breaks are not supported. |
-| `rule-inset` and related properties | Not implemented | Segment insets are not supported. |
+| `rule-inset` | Partial | One or two pixel values inset line ends; use `--flex-rule-inset` when CSS support is absent. |
+| Other inset properties | Not implemented | Cap/junction variants and percentages are not supported. |
 | `rule-overlap`, `rule-visibility-items` | Not implemented | Specification-specific overlap and visibility behavior is not supported. |
 | `repeat(...)` and rule lists | Not implemented | Styles cannot be alternated between rules. |
 | `gap`, `row-gap`, `column-gap` | Not polyfilled | Native Flexbox determines the gaps; Canvas only draws over the result. |
@@ -138,7 +144,7 @@ This is a geometric heuristic based on DOM rectangles, not access to the browser
 - This is not a full CSS Gaps or CSS `rule` implementation.
 - Longhand properties, rule lists, and additional values are not parsed.
 - Only solid, single-color lines are supported; `dashed`, `dotted`, `double`, gradients, and `repeat()` are not.
-- Separate styles for the two directions and `rule-inset` are not supported.
+- Separate colors and widths for the two directions are not supported.
 - The Canvas is drawn above the flex items with `z-index: 1`, although pointer events pass through it.
 - Text nodes, pseudo-elements, and non-element flex items are not measured.
 - The detected flex lines are inferred from geometry and may be inaccurate in complex layouts.

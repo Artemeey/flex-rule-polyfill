@@ -171,6 +171,21 @@ const paint = (
     const contentStart = Number.parseFloat(horizontal ? style.paddingLeft : style.paddingTop) || 0;
     const contentEnd = (horizontal ? width : height)
         - (Number.parseFloat(horizontal ? style.paddingRight : style.paddingBottom) || 0);
+    // Укорачивать концы каждой линии на величину общего отступа.
+    const insetValue = style.getPropertyValue('rule-inset').trim()
+        || style.getPropertyValue('--flex-rule-inset').trim();
+    const insetParts = insetValue.match(/^(-?\d*\.?\d+)(?:px)?(?:\s+(-?\d*\.?\d+)(?:px)?)?$/);
+    const insetStart = insetParts ? Number(insetParts[1]) : 0;
+    const insetEnd = insetParts ? Number(insetParts[2] ?? insetParts[1]) : 0;
+    // Сохранять прежнюю отрисовку обоих направлений, пока не задано отдельное правило.
+    const columnOverride = style.getPropertyValue('--flex-column-rule-style').trim();
+    const rowOverride = style.getPropertyValue('--flex-row-rule-style').trim();
+    const columnStyle = columnOverride || style.columnRuleStyle;
+    const rowStyle = rowOverride || style.getPropertyValue('row-rule-style').trim();
+    const axisStylesSpecified = Boolean(columnOverride || rowOverride
+        || (columnStyle && columnStyle !== 'none') || (rowStyle && rowStyle !== 'none'));
+    const drawColumns = !axisStylesSpecified || Boolean(columnStyle && columnStyle !== 'none' && columnStyle !== 'hidden');
+    const drawRows = !axisStylesSpecified || Boolean(rowStyle && rowStyle !== 'none' && rowStyle !== 'hidden');
 
     context.strokeStyle = options.color
         ?? rule.color
@@ -191,13 +206,18 @@ const paint = (
                 ? (style.direction === 'rtl') !== style.flexDirection.endsWith('reverse')
                 : style.flexDirection.endsWith('reverse');
             const position = reversedMainAxis ? -middle : middle;
+            const start = line.crossStart + insetStart;
+            const end = line.crossEnd - insetEnd;
+            if (start >= end) continue;
 
             if (horizontal) {
-                context.moveTo(position, line.crossStart);
-                context.lineTo(position, line.crossEnd);
+                if (!drawColumns) continue;
+                context.moveTo(position, start);
+                context.lineTo(position, end);
             } else {
-                context.moveTo(line.crossStart, position);
-                context.lineTo(line.crossEnd, position);
+                if (!drawRows) continue;
+                context.moveTo(start, position);
+                context.lineTo(end, position);
             }
         }
     }
@@ -210,13 +230,18 @@ const paint = (
         if (!previousBeforeNext && !nextBeforePrevious) continue;
 
         const middle = previousBeforeNext ? (a.crossEnd + b.crossStart) / 2 : (b.crossEnd + a.crossStart) / 2;
+        const start = contentStart + insetStart;
+        const end = contentEnd - insetEnd;
+        if (start >= end) continue;
 
         if (horizontal) {
-            context.moveTo(contentStart, middle);
-            context.lineTo(contentEnd, middle);
+            if (!drawRows) continue;
+            context.moveTo(start, middle);
+            context.lineTo(end, middle);
         } else {
-            context.moveTo(middle, contentStart);
-            context.lineTo(middle, contentEnd);
+            if (!drawColumns) continue;
+            context.moveTo(middle, start);
+            context.lineTo(middle, end);
         }
     }
 
@@ -227,7 +252,7 @@ const paint = (
  * Draw solid `rule` gap decorations on a flex container in browsers without native support.
  * The returned cleanup function disconnects observers and removes the canvas.
  * Supports flex-wrap, row/column directions, reverse directions, and changing item sizes.
- * Does not implement every CSS Gaps feature (lists, dashed, insets, writing modes).
+ * Does not implement every CSS Gaps feature (lists, dashed, writing modes).
  */
 export const polyfillFlexRule = (flex: HTMLElement, options: FlexRuleOptions = {}): (() => void) => {
     if (!options.force && CSS.supports('rule', '1px solid')) return (): void => {
