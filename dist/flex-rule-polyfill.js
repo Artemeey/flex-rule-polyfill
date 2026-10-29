@@ -15,6 +15,15 @@ const readRule = (style) => {
     };
 };
 /**
+ * Определить стиль оси, исключая устаревший `column-rule`, не относящийся к Flexbox.
+ */
+const readAxisRule = (style, axis, option) => {
+    const nativeRule = CSS.supports('rule', '1px solid')
+        ? style.getPropertyValue(`${axis}-rule-style`).trim()
+        : '';
+    return option ?? (nativeRule || style.getPropertyValue(`--flex-${axis}-rule`).trim() || 'solid');
+};
+/**
  * Read visible, in-flow flex items in their actual CSS order.
  */
 const measureItems = (flex, canvas, style) => {
@@ -107,13 +116,17 @@ const paint = (flex, canvas, context, options) => {
     const contentEnd = (horizontal ? width : height)
         - (Number.parseFloat(horizontal ? style.paddingRight : style.paddingBottom) || 0);
     // Укорачивать концы каждой линии на величину общего отступа.
-    const insetValue = style.getPropertyValue('rule-inset').trim()
-        || style.getPropertyValue('--flex-rule-inset').trim();
-    const insetParts = insetValue.match(/^(-?\d*\.?\d+)(?:px)?(?:\s+(-?\d*\.?\d+)(?:px)?)?$/);
-    const insetStart = insetParts ? Number(insetParts[1]) : 0;
-    const insetEnd = insetParts ? Number(insetParts[2] ?? insetParts[1]) : 0;
-    // Явное отключение нельзя отличить от значения column-rule по умолчанию без маркера.
-    const hideColumnRules = style.getPropertyValue('--flex-column-rule').trim() === 'none';
+    const nativeInset = CSS.supports('rule-inset', '0px') ? style.getPropertyValue('rule-inset').trim() : '';
+    const insetValue = options.inset ?? (nativeInset || style.getPropertyValue('--flex-rule-inset').trim());
+    const inset = typeof insetValue === 'number' ? `${insetValue}px` : insetValue.trim();
+    // Браузер сериализует одинаковые cap/junction-отступы как `start end / start end`.
+    const uniformInset = inset.replace(/^(.+?)\s*\/\s*\1$/, '$1');
+    const insetParts = uniformInset.match(/^(-?\d*\.?\d+px|0)(?:\s+(-?\d*\.?\d+px|0))?$/);
+    const insetStart = insetParts ? Number.parseFloat(insetParts[1]) : 0;
+    const insetEnd = insetParts ? Number.parseFloat(insetParts[2] ?? insetParts[1]) : 0;
+    // Настройки относятся к направлениям промежутков, а не к главной оси Flexbox.
+    const rowRule = readAxisRule(style, 'row', options.rowRule);
+    const columnRule = readAxisRule(style, 'column', options.columnRule);
     context.strokeStyle = options.color
         ?? rule.color
         ?? (style.getPropertyValue('--flex-rule-color').trim() || style.color);
@@ -122,6 +135,8 @@ const paint = (flex, canvas, context, options) => {
         ?? (Number.parseFloat(style.getPropertyValue('--flex-rule-width')) || 1);
     context.beginPath();
     for (const line of lines) {
+        if ((horizontal ? columnRule : rowRule) !== 'solid')
+            continue;
         for (let i = 1; i < line.items.length; i++) {
             const before = line.items[i - 1];
             const after = line.items[i];
@@ -137,8 +152,6 @@ const paint = (flex, canvas, context, options) => {
             if (start >= end)
                 continue;
             if (horizontal) {
-                if (hideColumnRules)
-                    continue;
                 context.moveTo(position, start);
                 context.lineTo(position, end);
             }
@@ -149,6 +162,8 @@ const paint = (flex, canvas, context, options) => {
         }
     }
     for (let i = 1; i < lines.length; i++) {
+        if ((horizontal ? rowRule : columnRule) !== 'solid')
+            continue;
         const a = lines[i - 1];
         const b = lines[i];
         const previousBeforeNext = a.crossEnd <= b.crossStart;
@@ -165,8 +180,6 @@ const paint = (flex, canvas, context, options) => {
             context.lineTo(end, middle);
         }
         else {
-            if (hideColumnRules)
-                continue;
             context.moveTo(middle, start);
             context.lineTo(middle, end);
         }

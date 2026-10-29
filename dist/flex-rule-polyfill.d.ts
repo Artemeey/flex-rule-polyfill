@@ -8,6 +8,12 @@ export interface FlexRuleOptions {
     force?: boolean;
     color?: string;
     width?: number;
+    /** Стиль линий между строками: `solid` или `none`. */
+    rowRule?: 'solid' | 'none';
+    /** Стиль линий между колонками: `solid` или `none`. */
+    columnRule?: 'solid' | 'none';
+    /** Общий отступ начала и конца линий: число в пикселях или одно-два CSS-значения в пикселях. */
+    inset?: number | string;
 }
 /**
  * Draw solid `rule` gap decorations on a flex container in browsers without native support.
