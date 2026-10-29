@@ -306,6 +306,11 @@
                     <output id="rule-width-value">2px</output>
                 </div>
                 <div class="control-group">
+                    <label for="rule-inset" data-i18n="lineInset">rule-inset:</label>
+                    <input id="rule-inset" type="range" min="0" max="20" step="1" value="0">
+                    <output id="rule-inset-value">0px</output>
+                </div>
+                <div class="control-group">
                     <label for="rule-color" data-i18n="lineColor">Цвет линии:</label>
                     <input id="rule-color" type="color" value="#e11d48">
                 </div>
@@ -387,6 +392,7 @@ polyfillFlexRule(cards);</code></pre>
             scrollLabel: 'Ограничить высоту 200px',
             containerWidth: 'Ширина:',
             lineWidth: 'Толщина линии:',
+            lineInset: 'rule-inset:',
             lineColor: 'Цвет линии:',
             language: 'Язык:',
             usageTitle: 'Варианты подключения',
@@ -422,6 +428,7 @@ polyfillFlexRule(cards);</code></pre>
             scrollLabel: 'Limit height to 200px',
             containerWidth: 'Width:',
             lineWidth: 'Line width:',
+            lineInset: 'rule-inset:',
             lineColor: 'Line color:',
             language: 'Language:',
             usageTitle: 'Connection options',
@@ -454,11 +461,14 @@ polyfillFlexRule(cards);</code></pre>
     const containerWidthValue = document.querySelector('#value');
     const ruleWidth = document.querySelector('#rule-width');
     const ruleWidthValue = document.querySelector('#rule-width-value');
+    const ruleInset = document.querySelector('#rule-inset');
+    const ruleInsetValue = document.querySelector('#rule-inset-value');
     const ruleColor = document.querySelector('#rule-color');
     const defaultSettings = {
         language: 'en',
         width: '760',
         ruleWidth: '2',
+        ruleInset: '0',
         color: '#e11d48',
         scroll: false,
     };
@@ -470,6 +480,7 @@ polyfillFlexRule(cards);</code></pre>
             language: dictionary[params.get('language')] ? params.get('language') : defaultSettings.language,
             width: /^\d+$/.test(params.get('width') || '') ? params.get('width') : defaultSettings.width,
             ruleWidth: /^[1-8]$/.test(params.get('ruleWidth') || '') ? params.get('ruleWidth') : defaultSettings.ruleWidth,
+            ruleInset: /^\d+$/.test(params.get('ruleInset') || '') ? params.get('ruleInset') : defaultSettings.ruleInset,
             color: /^#[\da-f]{6}$/i.test(params.get('color') || '') ? params.get('color') : defaultSettings.color,
             scroll: params.get('scroll') === '1',
         };
@@ -480,6 +491,7 @@ polyfillFlexRule(cards);</code></pre>
             language: language.value,
             width: containerWidth.value,
             ruleWidth: ruleWidth.value,
+            ruleInset: ruleInset.value,
             color: ruleColor.value,
             scroll: scrollTest.checked ? '1' : '0',
         });
@@ -491,6 +503,7 @@ polyfillFlexRule(cards);</code></pre>
     language.value = settings.language;
     containerWidth.value = settings.width;
     ruleWidth.value = settings.ruleWidth;
+    ruleInset.value = settings.ruleInset;
     ruleColor.value = settings.color;
     scrollTest.checked = settings.scroll;
     let currentLanguage = settings.language;
@@ -591,14 +604,23 @@ polyfillFlexRule(cards);</code></pre>
     // Rule appearance
     const updateRule = () => {
         const width = `${ruleWidth.value}px`;
+        const inset = `${ruleInset.value}px`;
         const color = ruleColor.value;
         flex.style.setProperty('--flex-rule-width', width);
         flex.style.setProperty('--flex-rule-color', color);
+        flex.style.setProperty('--flex-rule-inset', inset);
         flex.style.setProperty('rule', `${width} solid ${color}`);
+        flex.style.setProperty('rule-inset', inset);
         ruleWidthValue.textContent = width;
+        ruleInsetValue.textContent = inset;
     };
 
     ruleWidth.addEventListener('input', () => {
+        updateRule();
+        saveSettingsToHash();
+    });
+
+    ruleInset.addEventListener('input', () => {
         updateRule();
         saveSettingsToHash();
     });

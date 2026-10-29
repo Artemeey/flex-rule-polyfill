@@ -81,6 +81,9 @@ interface FlexRuleOptions {
     force?: boolean;
     color?: string;
     width?: number;
+    rowRule?: 'solid' | 'none';
+    columnRule?: 'solid' | 'none';
+    inset?: number | string;
 }
 
 const destroy = polyfillFlexRule(element, options);
@@ -108,9 +111,11 @@ This project provides a visual fallback, not a complete CSS Gaps implementation.
 | `rule-style` | Fixed | Only `solid` is supported. |
 | `rule-color` | Visual equivalent | Use `options.color` or `--flex-rule-color`; the standard longhand is not parsed. |
 | `rule-width` | Visual equivalent | Use `options.width` or `--flex-rule-width`; the standard longhand is not parsed. |
-| `row-rule` / `column-rule` | Partial | Lines are drawn according to the Flexbox direction, with one shared style. |
+| `row-rule` | Partial | Supports `solid` and `none`. Use `options.rowRule` or `--flex-row-rule`. |
+| `column-rule` | Partial | Supports `solid` and `none`. Use `options.columnRule` or `--flex-column-rule`. |
 | `rule-break` and related properties | Not implemented | Intersection breaks are not supported. |
-| `rule-inset` and related properties | Not implemented | Segment insets are not supported. |
+| `rule-inset` | Partial | Use `options.inset` or `--flex-rule-inset`. Sets insets at both ends of each line. One value sets a shared inset; two values set an inset for each end. |
+| Other inset properties | Not implemented | Cap/junction variants and percentages are not supported. |
 | `rule-overlap`, `rule-visibility-items` | Not implemented | Specification-specific overlap and visibility behavior is not supported. |
 | `repeat(...)` and rule lists | Not implemented | Styles cannot be alternated between rules. |
 | `gap`, `row-gap`, `column-gap` | Not polyfilled | Native Flexbox determines the gaps; Canvas only draws over the result. |
@@ -137,8 +142,10 @@ This is a geometric heuristic based on DOM rectangles, not access to the browser
 
 - This is not a full CSS Gaps or CSS `rule` implementation.
 - Longhand properties, rule lists, and additional values are not parsed.
-- Only solid, single-color lines are supported; `dashed`, `dotted`, `double`, gradients, and `repeat()` are not.
-- Separate styles for the two directions and `rule-inset` are not supported.
+- Supports `solid` (single-color lines) and `none` (hidden lines) for each axis.
+  `dashed`, `dotted`, `double`, gradients, and `repeat()` are not supported.
+- Separate colors and widths for the two directions are not supported.
+- For `rule-inset`, percentages, `calc()`, `auto`, and separate cap/junction settings are not supported.
 - The Canvas is drawn above the flex items with `z-index: 1`, although pointer events pass through it.
 - Text nodes, pseudo-elements, and non-element flex items are not measured.
 - The detected flex lines are inferred from geometry and may be inaccurate in complex layouts.

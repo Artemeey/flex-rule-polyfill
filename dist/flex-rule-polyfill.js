@@ -15,6 +15,15 @@ const readRule = (style) => {
     };
 };
 /**
+ * Определить стиль оси, исключая устаревший `column-rule`, не относящийся к Flexbox.
+ */
+const readAxisRule = (style, axis, option) => {
+    const nativeRule = CSS.supports('rule', '1px solid')
+        ? style.getPropertyValue(`${axis}-rule-style`).trim()
+        : '';
+    return option ?? (nativeRule || style.getPropertyValue(`--flex-${axis}-rule`).trim() || 'solid');
+};
+/**
  * Read visible, in-flow flex items in their actual CSS order.
  */
 const measureItems = (flex, canvas, style) => {
@@ -106,6 +115,18 @@ const paint = (flex, canvas, context, options) => {
     const contentStart = Number.parseFloat(horizontal ? style.paddingLeft : style.paddingTop) || 0;
     const contentEnd = (horizontal ? width : height)
         - (Number.parseFloat(horizontal ? style.paddingRight : style.paddingBottom) || 0);
+    // Укорачивать концы каждой линии на величину общего отступа.
+    const nativeInset = CSS.supports('rule-inset', '0px') ? style.getPropertyValue('rule-inset').trim() : '';
+    const insetValue = options.inset ?? (nativeInset || style.getPropertyValue('--flex-rule-inset').trim());
+    const inset = typeof insetValue === 'number' ? `${insetValue}px` : insetValue.trim();
+    // Браузер сериализует одинаковые cap/junction-отступы как `start end / start end`.
+    const uniformInset = inset.replace(/^(.+?)\s*\/\s*\1$/, '$1');
+    const insetParts = uniformInset.match(/^(-?\d*\.?\d+px|0)(?:\s+(-?\d*\.?\d+px|0))?$/);
+    const insetStart = insetParts ? Number.parseFloat(insetParts[1]) : 0;
+    const insetEnd = insetParts ? Number.parseFloat(insetParts[2] ?? insetParts[1]) : 0;
+    // Настройки относятся к направлениям промежутков, а не к главной оси Flexbox.
+    const rowRule = readAxisRule(style, 'row', options.rowRule);
+    const columnRule = readAxisRule(style, 'column', options.columnRule);
     context.strokeStyle = options.color
         ?? rule.color
         ?? (style.getPropertyValue('--flex-rule-color').trim() || style.color);
@@ -114,6 +135,8 @@ const paint = (flex, canvas, context, options) => {
         ?? (Number.parseFloat(style.getPropertyValue('--flex-rule-width')) || 1);
     context.beginPath();
     for (const line of lines) {
+        if ((horizontal ? columnRule : rowRule) !== 'solid')
+            continue;
         for (let i = 1; i < line.items.length; i++) {
             const before = line.items[i - 1];
             const after = line.items[i];
@@ -124,17 +147,23 @@ const paint = (flex, canvas, context, options) => {
                 ? (style.direction === 'rtl') !== style.flexDirection.endsWith('reverse')
                 : style.flexDirection.endsWith('reverse');
             const position = reversedMainAxis ? -middle : middle;
+            const start = line.crossStart + insetStart;
+            const end = line.crossEnd - insetEnd;
+            if (start >= end)
+                continue;
             if (horizontal) {
-                context.moveTo(position, line.crossStart);
-                context.lineTo(position, line.crossEnd);
+                context.moveTo(position, start);
+                context.lineTo(position, end);
             }
             else {
-                context.moveTo(line.crossStart, position);
-                context.lineTo(line.crossEnd, position);
+                context.moveTo(start, position);
+                context.lineTo(end, position);
             }
         }
     }
     for (let i = 1; i < lines.length; i++) {
+        if ((horizontal ? rowRule : columnRule) !== 'solid')
+            continue;
         const a = lines[i - 1];
         const b = lines[i];
         const previousBeforeNext = a.crossEnd <= b.crossStart;
@@ -142,13 +171,17 @@ const paint = (flex, canvas, context, options) => {
         if (!previousBeforeNext && !nextBeforePrevious)
             continue;
         const middle = previousBeforeNext ? (a.crossEnd + b.crossStart) / 2 : (b.crossEnd + a.crossStart) / 2;
+        const start = contentStart + insetStart;
+        const end = contentEnd - insetEnd;
+        if (start >= end)
+            continue;
         if (horizontal) {
-            context.moveTo(contentStart, middle);
-            context.lineTo(contentEnd, middle);
+            context.moveTo(start, middle);
+            context.lineTo(end, middle);
         }
         else {
-            context.moveTo(middle, contentStart);
-            context.lineTo(middle, contentEnd);
+            context.moveTo(middle, start);
+            context.lineTo(middle, end);
         }
     }
     context.stroke();
@@ -157,7 +190,7 @@ const paint = (flex, canvas, context, options) => {
  * Draw solid `rule` gap decorations on a flex container in browsers without native support.
  * The returned cleanup function disconnects observers and removes the canvas.
  * Supports flex-wrap, row/column directions, reverse directions, and changing item sizes.
- * Does not implement every CSS Gaps feature (lists, dashed, insets, writing modes).
+ * Does not implement every CSS Gaps feature (lists, dashed, writing modes).
  */
 export const polyfillFlexRule = (flex, options = {}) => {
     if (!options.force && CSS.supports('rule', '1px solid'))
