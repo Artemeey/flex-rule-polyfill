@@ -114,7 +114,7 @@ This project provides a visual fallback, not a complete CSS Gaps implementation.
 | `row-rule` | Partial | Supports `solid` and `none`. Use `options.rowRule` or `--flex-row-rule`. |
 | `column-rule` | Partial | Supports `solid` and `none`. Use `options.columnRule` or `--flex-column-rule`. |
 | `rule-break` and related properties | Not implemented | Intersection breaks are not supported. |
-| `rule-inset` | Partial | Use `options.inset` or `--flex-rule-inset`. Supports one or two pixel values for line start and end. |
+| `rule-inset` | Partial | Use `options.inset` or `--flex-rule-inset`. Sets insets at both ends of each line. One value sets a shared inset; two values set an inset for each end. |
 | Other inset properties | Not implemented | Cap/junction variants and percentages are not supported. |
 | `rule-overlap`, `rule-visibility-items` | Not implemented | Specification-specific overlap and visibility behavior is not supported. |
 | `repeat(...)` and rule lists | Not implemented | Styles cannot be alternated between rules. |
