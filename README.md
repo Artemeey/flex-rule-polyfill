@@ -81,6 +81,9 @@ interface FlexRuleOptions {
     force?: boolean;
     color?: string;
     width?: number;
+    rowRule?: 'solid' | 'none';
+    columnRule?: 'solid' | 'none';
+    inset?: number | string;
 }
 
 const destroy = polyfillFlexRule(element, options);
@@ -89,11 +92,6 @@ destroy();
 
 The priority for `color` and `width` is: API options, values read from the computed `rule` shorthand, Canvas custom
 properties, and defaults.
-
-`rule-inset` shortens both ends of each line. The polyfill reads one or two pixel values from the computed property;
-use `--flex-rule-inset` with the same values when the browser does not support it. To hide vertical lines on mobile while
-keeping horizontal ones, set `column-rule: none` and `--flex-column-rule: none` in the same media query. The custom
-property tells the polyfill that `none` was set explicitly rather than being the default value.
 
 The polyfill supports `flex-wrap`, different item sizes, `order`, row and column directions, reverse directions, RTL,
 scrolling, and dynamic changes observed by the browser. It measures only direct HTML element children of the Flexbox
@@ -113,13 +111,44 @@ This project provides a visual fallback, not a complete CSS Gaps implementation.
 | `rule-style` | Fixed | Only `solid` is supported. |
 | `rule-color` | Visual equivalent | Use `options.color` or `--flex-rule-color`; the standard longhand is not parsed. |
 | `rule-width` | Visual equivalent | Use `options.width` or `--flex-rule-width`; the standard longhand is not parsed. |
-| `row-rule` / `column-rule` | Partial | Both directions share a color and width; `--flex-column-rule: none` hides vertical lines. |
+| `row-rule` | Partial | Supports `solid` and `none`. Use `options.rowRule` or `--flex-row-rule`. |
+| `column-rule` | Partial | Supports `solid` and `none`. Use `options.columnRule` or `--flex-column-rule`. |
 | `rule-break` and related properties | Not implemented | Intersection breaks are not supported. |
-| `rule-inset` | Partial | One or two pixel values inset line ends; use `--flex-rule-inset` when CSS support is absent. |
+| `rule-inset` | Partial | Use `options.inset` or `--flex-rule-inset`. Supports one or two pixel values for line start and end. |
 | Other inset properties | Not implemented | Cap/junction variants and percentages are not supported. |
 | `rule-overlap`, `rule-visibility-items` | Not implemented | Specification-specific overlap and visibility behavior is not supported. |
 | `repeat(...)` and rule lists | Not implemented | Styles cannot be alternated between rules. |
 | `gap`, `row-gap`, `column-gap` | Not polyfilled | Native Flexbox determines the gaps; Canvas only draws over the result. |
+
+The priority for the new settings is: API options, values from CSS properties supported by the browser, CSS custom
+properties, and defaults. Both axes default to `solid`, and insets default to zero. A number in `options.inset` sets
+the same inset in pixels at both ends of each line.
+
+Both directions share a color and width. Separate colors and widths, other line styles, and rule lists are not
+supported. For `rule-inset`, percentages, `calc()`, `auto`, and separate cap/junction settings are not supported.
+
+Example using API options:
+
+```js
+polyfillFlexRule(element, {
+    rowRule: 'solid',
+    columnRule: 'none',
+    inset: '4px 8px',
+});
+```
+
+Equivalent settings using CSS custom properties:
+
+```css
+.flex {
+    --flex-row-rule: solid;
+    --flex-column-rule: none;
+    --flex-rule-inset: 4px 8px;
+}
+```
+
+To disable horizontal lines, use `options.rowRule: 'none'` or `--flex-row-rule: none`.
+To disable vertical lines, use `options.columnRule: 'none'` or `--flex-column-rule: none`.
 
 `flex-direction`, `flex-wrap`, `order`, `direction`, `padding`, and actual element sizes are used as input. The browser
 continues to implement those properties; the polyfill does not replace Flexbox layout.
@@ -143,8 +172,10 @@ This is a geometric heuristic based on DOM rectangles, not access to the browser
 
 - This is not a full CSS Gaps or CSS `rule` implementation.
 - Longhand properties, rule lists, and additional values are not parsed.
-- Only solid, single-color lines are supported; `dashed`, `dotted`, `double`, gradients, and `repeat()` are not.
+- Supports `solid` (single-color lines) and `none` (hidden lines) for each axis.
+  `dashed`, `dotted`, `double`, gradients, and `repeat()` are not supported.
 - Separate colors and widths for the two directions are not supported.
+- For `rule-inset`, percentages, `calc()`, `auto`, and separate cap/junction settings are not supported.
 - The Canvas is drawn above the flex items with `z-index: 1`, although pointer events pass through it.
 - Text nodes, pseudo-elements, and non-element flex items are not measured.
 - The detected flex lines are inferred from geometry and may be inaccurate in complex layouts.
