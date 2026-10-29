@@ -120,36 +120,6 @@ This project provides a visual fallback, not a complete CSS Gaps implementation.
 | `repeat(...)` and rule lists | Not implemented | Styles cannot be alternated between rules. |
 | `gap`, `row-gap`, `column-gap` | Not polyfilled | Native Flexbox determines the gaps; Canvas only draws over the result. |
 
-The priority for the new settings is: API options, values from CSS properties supported by the browser, CSS custom
-properties, and defaults. Both axes default to `solid`, and insets default to zero. A number in `options.inset` sets
-the same inset in pixels at both ends of each line.
-
-Both directions share a color and width. Separate colors and widths, other line styles, and rule lists are not
-supported. For `rule-inset`, percentages, `calc()`, `auto`, and separate cap/junction settings are not supported.
-
-Example using API options:
-
-```js
-polyfillFlexRule(element, {
-    rowRule: 'solid',
-    columnRule: 'none',
-    inset: '4px 8px',
-});
-```
-
-Equivalent settings using CSS custom properties:
-
-```css
-.flex {
-    --flex-row-rule: solid;
-    --flex-column-rule: none;
-    --flex-rule-inset: 4px 8px;
-}
-```
-
-To disable horizontal lines, use `options.rowRule: 'none'` or `--flex-row-rule: none`.
-To disable vertical lines, use `options.columnRule: 'none'` or `--flex-column-rule: none`.
-
 `flex-direction`, `flex-wrap`, `order`, `direction`, `padding`, and actual element sizes are used as input. The browser
 continues to implement those properties; the polyfill does not replace Flexbox layout.
 
